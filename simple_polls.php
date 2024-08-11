@@ -3,7 +3,7 @@
 Plugin Name: Simple Polls Plugin
 Description: Adds a polling feature to your WordPress site, allowing visitors to vote on various topics and see the results.
 Version: 1.0
-Author: [Your Name]
+Author: [Dorji Norbu]
 License: GPL2
 */
 
