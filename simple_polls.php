@@ -70,9 +70,7 @@ function spp_enqueue_styles() {
 }
 add_action('wp_enqueue_scripts', 'spp_enqueue_styles');
 
-
 // Shortcode to Display Poll and Handle Voting
-
 function spp_poll_shortcode($atts) {
     $atts = shortcode_atts(array('id' => null), $atts);
     $poll_id = $atts['id'];
@@ -129,49 +127,49 @@ function spp_poll_shortcode($atts) {
     return $output;
 }
 add_shortcode('spp_poll', 'spp_poll_shortcode');
-/**function spp_poll_shortcode($atts) {
-    $atts = shortcode_atts(array('id' => null), $atts);
-    $poll_id = $atts['id'];
 
-    if (!$poll_id) return 'No poll ID provided.';
+// ===========================
+// Admin Menu and Settings Page Code
+// ===========================
 
-    $poll = get_post($poll_id);
-    if (!$poll || $poll->post_type != 'spp_poll') return 'Invalid poll ID.';
-
-    $options = explode(',', get_post_meta($poll_id, '_spp_poll_options', true));
-
-    if ($_POST && isset($_POST['spp_poll_vote'])) {
-        $vote = sanitize_text_field($_POST['spp_poll_vote']);
-        $votes = get_post_meta($poll_id, '_spp_poll_votes', true);
-        $votes = $votes ? json_decode($votes, true) : array();
-
-        if (array_key_exists($vote, $votes)) {
-            $votes[$vote]++;
-        } else {
-            $votes[$vote] = 1;
-        }
-
-        update_post_meta($poll_id, '_spp_poll_votes', json_encode($votes));
-    }
-
-    $output = '<h3>' . esc_html($poll->post_title) . '</h3>';
-    $output .= '<form method="POST">';
-    foreach ($options as $option) {
-        $output .= '<label>';
-        $output .= '<input type="radio" name="spp_poll_vote" value="' . esc_attr(trim($option)) . '"> ' . esc_html(trim($option));
-        $output .= '</label><br>';
-    }
-    $output .= '<input type="submit" value="Vote">';
-    $output .= '</form>';
-
-    $votes = get_post_meta($poll_id, '_spp_poll_votes', true);
-    $votes = $votes ? json_decode($votes, true) : array();
-
-    $output .= '<h4>Results:</h4>';
-    foreach ($votes as $option => $count) {
-        $output .= esc_html($option) . ': ' . esc_html($count) . '<br>';
-    }
-
-    return $output;
+// Add a new menu item under "Settings" for the plugin's configuration page
+function spp_add_admin_menu() {
+    add_options_page(
+        'Simple Polls Settings', 
+        'Simple Polls', 
+        'manage_options', 
+        'spp_settings', 
+        'spp_settings_page'
+    );
 }
-add_shortcode('spp_poll', 'spp_poll_shortcode');*/
+add_action('admin_menu', 'spp_add_admin_menu');
+
+// Create the settings page content
+function spp_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1>Simple Polls Settings</h1>
+        <form action="options.php" method="post">
+            <?php
+            settings_fields('spp_settings_group');
+            do_settings_sections('spp_settings');
+            submit_button();
+            ?>
+        </form>
+    </div>
+    <?php
+}
+
+// Register settings, sections, and fields
+function spp_register_settings() {
+    register_setting('spp_settings_group', 'spp_default_option');
+    add_settings_section('spp_main_section', 'Main Settings', null, 'spp_settings');
+    add_settings_field('spp_default_option_field', 'Default Option', 'spp_default_option_callback', 'spp_settings', 'spp_main_section');
+}
+add_action('admin_init', 'spp_register_settings');
+
+// Callback function to display the field for the default option
+function spp_default_option_callback() {
+    $default_option = get_option('spp_default_option');
+    echo '<input type="text" name="spp_default_option" value="' . esc_attr($default_option) . '">';
+}
