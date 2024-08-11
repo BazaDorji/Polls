@@ -1,0 +1,2 @@
+# Polls
+polls_plugins
